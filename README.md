@@ -17,7 +17,7 @@ Sistema de inteligência de dados para análise e geração de palpites otimizad
 
 1.  Clone o repositório:
     ```bash
-    git clone https://github.com/SEU_USUARIO/lottery-intelligence.git
+    git clone https://github.com/nilsonpmjr/lottery-intelligence.git
     cd lottery-intelligence
     ```
 
