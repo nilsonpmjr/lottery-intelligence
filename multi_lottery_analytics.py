@@ -8,6 +8,8 @@ import os
 from collections import Counter
 import itertools
 import time
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
 
 # --- CONFIGURAÇÃO ---
 DB_PATH = "loterias.db"
@@ -206,6 +208,104 @@ def validar_paridade(jogo, loteria):
 
     return True # Outras loterias aceita tudo por enqto
 
+# --- FILTROS AVANÇADOS V3 ---
+class AdvancedFilters:
+    @staticmethod
+    def count_primes(jogo):
+        # Primos até 100 (cobre todas as loterias)
+        primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]
+        return len([x for x in jogo if x in primes])
+
+    @staticmethod
+    def count_fibonacci(jogo):
+        # Fibonacci até 100
+        fibs = [1, 2, 3, 5, 8, 13, 21, 34, 55, 89]
+        return len([x for x in jogo if x in fibs])
+
+    @staticmethod
+    def count_consecutive(jogo):
+        sorted_jogo = sorted(jogo)
+        max_seq = 0
+        current_seq = 1
+        for i in range(1, len(sorted_jogo)):
+            if sorted_jogo[i] == sorted_jogo[i-1] + 1:
+                current_seq += 1
+            else:
+                max_seq = max(max_seq, current_seq)
+                current_seq = 1
+        return max(max_seq, current_seq)
+
+    @staticmethod
+    def validar_v3(jogo, loteria, ultimo_resultado=None):
+        soma = sum(jogo)
+        
+        if loteria == 'lotofacil':
+            # 1. Filtro de Soma (Normal: 180-210)
+            # Vamos usar 160-230 para não ser restritivo demais, mas cortar lixo
+            if not (160 <= soma <= 230): return False
+            
+            # 2. Filtro de Primos (Normal: 4-6)
+            n_primos = AdvancedFilters.count_primes(jogo)
+            if not (3 <= n_primos <= 8): return False
+            
+            # 3. Filtro de Fibonacci (Normal: 3-5)
+            n_fib = AdvancedFilters.count_fibonacci(jogo)
+            if not (2 <= n_fib <= 7): return False
+            
+            # 4. Filtro de Sequência (Evita bursts gigantes tipo 1,2,3,4,5,6)
+            max_seq = AdvancedFilters.count_consecutive(jogo)
+            if max_seq > 6: return False
+            
+            # 5. Filtro de Repetentes (Normal: 8-10)
+            if ultimo_resultado:
+                repetidas = len(set(jogo).intersection(set(ultimo_resultado)))
+                if not (7 <= repetidas <= 11): return False 
+        
+        
+        return True
+
+# --- MOTOR DE INTELIGÊNCIA ARTIFICIAL (V3) ---
+class LotteryAI:
+    def __init__(self, history):
+        self.model = RandomForestClassifier(n_estimators=100, random_state=42)
+        self.is_trained = False
+        self.train(history)
+        
+    def _vectorize(self, jogo, total_nums=25):
+        # Cria vetor binário [0, 1, 0, 0, 1...] para as dezenas
+        vec = np.zeros(total_nums)
+        for n in jogo:
+            if 1 <= n <= total_nums:
+                vec[n-1] = 1
+        return vec
+        
+    def train(self, history):
+        print("   [AI] Treinando Brain (Random Forest)...")
+        X = []
+        y = []
+        
+        # 1. Exemplos Positivos (Jogos Reais)
+        for jogo in history:
+            X.append(self._vectorize(jogo))
+            y.append(1) # Classe 1 = Real
+            
+        # 2. Exemplos Negativos (Jogos Aleatórios/Ruídos)
+        # Geramos a mesma quantidade de jogos aleatórios para balancear
+        for _ in range(len(history)):
+            ruido = np.random.choice(range(1, 26), 15, replace=False)
+            X.append(self._vectorize(ruido))
+            y.append(0) # Classe 0 = Fake
+            
+        self.model.fit(X, y)
+        self.is_trained = True
+        print(f"   [AI] Modelo treinado com {len(X)} amostras.")
+        
+    def predict_score(self, jogo):
+        if not self.is_trained: return 0.5
+        vec = self._vectorize(jogo)
+        # Retorna a probabilidade de ser Classe 1 (Real)
+        return self.model.predict_proba([vec])[0][1]
+
 # --- GERADORES DE JOGOS ---
 
 def gerar_mega(stats, orcamento):
@@ -232,25 +332,83 @@ def gerar_mega(stats, orcamento):
         
     return jogos
 
-def gerar_lotofacil(stats, orcamento):
+def gerar_lotofacil(stats, orcamento, ultimo_resultado=None, history=None):
     custo = CONFIG_LOTERIAS['lotofacil']['preco']
     qtd_jogos = int(orcamento // custo)
-    print(f"   -> Gerando {qtd_jogos} jogos (Fechamento/Ciclos 2.0)...")
+    print(f"   -> Gerando {qtd_jogos} jogos (Matriz V3 + ML Random Forest)...")
     
-    top_18 = stats.sort_values('score', ascending=False).head(18)['numero'].values
     
+    # ESTRATÉGIA V3.1: MATRIZ DINÂMICA (CAOS CONTROLADO)
+    sorted_stats = stats.sort_values('score', ascending=False)
+    
+    # 1. Núcleo Fixo Reduzido (Top 5): Dá mais liberdade para variação.
+    nucleo_fixo = sorted_stats.head(5)['numero'].values
+    
+    # 2. Pool de Cobertura Híbrido:
+    #    - 10 dezenas "Mornas" (Posição 6 a 15)
+    #    - 5 dezenas "Frias/Zebras" (Do fundo da tabela) para pegar as surpresas
+    mornas = sorted_stats.iloc[5:15]['numero'].values
+    frias = sorted_stats.tail(5)['numero'].values # As zebras
+    
+    cobertura_pool = np.concatenate([mornas, frias])
+    
+    print(f"      [V3.1] Núcleo Fixo (5): {nucleo_fixo}")
+    print(f"      [V3.1] Cobertura (15): {len(cobertura_pool)} dezenas (Inclui {len(frias)} Zebras)")
+    
+    # TREINAR AI SE HISTÓRICO DISPONÍVEL
+    ai_model = None
+    if history and len(history) > 100:
+        ai_model = LotteryAI(history)
+
     jogos = []
     attempts = 0
-    while len(jogos) < qtd_jogos and attempts < 1000:
+    max_attempts = 10000 
+    
+    while len(jogos) < qtd_jogos and attempts < max_attempts:
         attempts += 1
-        j = sorted(list(np.random.choice(top_18, 15, replace=False)))
-        # Lotofacil paridade ideal: 7p/8i ou 8p/7i (as vezes 6/9)
-        pares = len([x for x in j if x % 2 == 0])
-        if pares < 6 or pares > 9: # Filtra extremos
+        
+        # Gera jogo: 5 Fixas + 10 Variáveis (escolhidas das 15 disponíveis)
+        variaveis = np.random.choice(cobertura_pool, 10, replace=False)
+        j = sorted(list(np.concatenate([nucleo_fixo, variaveis])))
+        
+        # --- APLICANDO FILTROS V3 (Estatística Clássica) ---
+        if not AdvancedFilters.validar_v3(j, 'lotofacil', ultimo_resultado):
             continue
             
-        if j not in jogos:
-            jogos.append(j)
+        # --- APLICANDO FILTRO AI (Machine Learning) ---
+        if ai_model:
+            score = ai_model.predict_score(j)
+            # Aceita apenas se parecer "real" (Score > 0.5)
+            # Como a AI tende a ser muito cética, 0.5 é um bom cutoff
+            if score < 0.5:
+                continue 
+            
+        # Converte para lista pura
+    attempts = 0
+    max_attempts = 10000 
+    
+    while len(jogos) < qtd_jogos and attempts < max_attempts:
+        attempts += 1
+        
+        # Gera jogo: 7 Fixas + 8 Variáveis (escolhidas das 13)
+        variaveis = np.random.choice(cobertura_pool, 8, replace=False)
+        j = sorted(list(np.concatenate([nucleo_fixo, variaveis])))
+        
+        # --- APLICANDO FILTROS V3 (Estatística Clássica) ---
+        if not AdvancedFilters.validar_v3(j, 'lotofacil', ultimo_resultado):
+            continue
+            
+        # --- APLICANDO FILTRO AI (Machine Learning) ---
+        # Se AI estiver ativa, exige score > 0.6
+        # Como não passamos AI ainda, vamos deixar o placeholder
+            
+        # Converte para lista pura para garantir comparação e armazenamento
+        j_list = [int(x) for x in j] 
+        
+        if j_list not in jogos:
+            jogos.append(j_list)
+            
+    print(f"      [DEBUG] Tentativas necessárias: {attempts}")
     return jogos
 
 def gerar_lotomania(stats, orcamento):
@@ -337,9 +495,11 @@ def main():
         print(f"   Base Histórica: {len(hist)} sorteios.")
         orcamento = cfg['orcamento_alvo']
         
-        # Dispatcher
+        last_result = hist[-1] if hist else None
+
+        # Dispatcher - Passando history para Lotofacil
         if loteria == 'megasena': jogos = gerar_mega(stats, orcamento)
-        elif loteria == 'lotofacil': jogos = gerar_lotofacil(stats, orcamento)
+        elif loteria == 'lotofacil': jogos = gerar_lotofacil(stats, orcamento, last_result, hist)
         elif loteria == 'lotomania': jogos = gerar_lotomania(stats, orcamento)
         elif loteria == 'diadesorte': jogos = gerar_diadesorte(stats, orcamento)
         
