@@ -45,6 +45,22 @@ O script irá:
 2.  Processar as estatísticas (v2.0 com paridade e hot streak).
 3.  Gerar o arquivo `relatorio_multiloteria.md` com os jogos prontos para copiar.
 
+
+## 🚀 Changelog (Versões)
+
+### v3.1 (Current) - Chaos Matrix & ML
+- **LotteryAI**: Machine Learning (RandomForest) treinado para detectar jogos "falsos".
+- **Chaos Matrix**: Núcleo Fixo (5 dezenas) + Injeção de Zebras (Dezenas frias).
+- **Firewall V3**: Filtros avançados de Soma, Primos e Fibonacci.
+
+### v2.0 - Hot Streak
+- Peso de Recência (Hot Streak).
+- Filtro de Paridade (Equilíbrio Par/Ímpar).
+- Suporte multi-loteria.
+
+### v1.0 - Statistical Base
+- Análise estatística pura (Frequência e Atraso).
+
 ## 📊 Estratégia "Sniper" (Economia)
 
 Este projeto recomenda seguir um **Calendário de Apostas**:
