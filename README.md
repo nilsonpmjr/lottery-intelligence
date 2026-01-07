@@ -4,13 +4,10 @@ Sistema de inteligência de dados para análise e geração de palpites otimizad
 
 ## 🚀 Funcionalidades
 
-*   **ETL Automatizado**: Baixa e atualiza o histórico de sorteios diretamente do GitHub (fonte open-data).
-*   **Análise Estatística**: Calcula frequência global, atraso (delay) e tendência recente (Hot Streak).
-*   **Algoritmos de Geração**:
-    *   **Mega-Sena**: Sniper (Foco em dezenas quentes com equilíbrio de paridade).
-    *   **Lotofácil**: Ciclos + Tendência Recente.
-    *   **Lotomania**: Espelho Otimizado (Cerca 20 ou 0 acertos).
-    *   **Dia de Sorte**: Fechamento Matemático (12 dezenas em 14 jogos).
+*   **ETL Automatizado**: Baixa e atualiza o histórico de sorteios diretamente do GitHub e armazena em SQLite (`loterias.db`).
+*   **LotteryAI (Machine Learning)**: Um "cérebro" treinado com Random Forest que aprende o padrão dos sorteios reais e bloqueia palpites falsos/aleatórios.
+*   **Matriz de Caos (V3.1)**: Geração de jogos usando a técnica de "Núcleo Fixo" (Top 5 estatístico) + "Injeção de Zebras" (Dezenas frias) para maximizar a diversidade.
+*   **Firewall Estatístico**: Filtros rigorosos que eliminam jogos com Soma, Primos ou Fibonacci fora da curva normal.
 *   **Gestão de Orçamento**: Otimiza os jogos para caber em um budget definido (padrão R$ 100).
 
 ## 🛠️ Instalação
