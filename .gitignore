@@ -13,3 +13,8 @@ env/
 # OS
 .DS_Store
 Thumbs.db
+
+# Generated Reports
+relatorio_*.md
+simulacao_*.md
+conferencia_*.md
