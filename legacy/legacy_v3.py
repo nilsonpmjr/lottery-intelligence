@@ -28,7 +28,9 @@ CONFIG_LOTERIAS = {
         "preco": 3.50, 
         "total_nums": 25, 
         "escolhe": 15,
-        "orcamento_alvo": 35.00 # ~10 jogos
+        "orcamento_alvo": 35.00, # ~10 jogos
+        "fixed_core": 4,
+        "variable_selection": 11
     },
     "lotomania": {
         "url": URL_BASE + "lotomania.json", 
@@ -338,22 +340,22 @@ def gerar_lotofacil(stats, orcamento, ultimo_resultado=None, history=None):
     print(f"   -> Gerando {qtd_jogos} jogos (Matriz V3 + ML Random Forest)...")
     
     
-    # ESTRATÉGIA V3.1: MATRIZ DINÂMICA (CAOS CONTROLADO)
+    # ESTRATÉGIA V3.2: MATRIZ DINÂMICA (CAOS AMPLIADO)
     sorted_stats = stats.sort_values('score', ascending=False)
     
-    # 1. Núcleo Fixo Reduzido (Top 5): Dá mais liberdade para variação.
-    nucleo_fixo = sorted_stats.head(5)['numero'].values
+    # 1. Núcleo Fixo Reduzido (Top 4): Aumenta variância.
+    nucleo_fixo = sorted_stats.head(4)['numero'].values
     
     # 2. Pool de Cobertura Híbrido:
-    #    - 10 dezenas "Mornas" (Posição 6 a 15)
+    #    - 12 dezenas "Mornas" (Posição 5 a 16)
     #    - 5 dezenas "Frias/Zebras" (Do fundo da tabela) para pegar as surpresas
-    mornas = sorted_stats.iloc[5:15]['numero'].values
+    mornas = sorted_stats.iloc[4:16]['numero'].values
     frias = sorted_stats.tail(5)['numero'].values # As zebras
     
     cobertura_pool = np.concatenate([mornas, frias])
     
-    print(f"      [V3.1] Núcleo Fixo (5): {nucleo_fixo}")
-    print(f"      [V3.1] Cobertura (15): {len(cobertura_pool)} dezenas (Inclui {len(frias)} Zebras)")
+    print(f"      [V3.2] Núcleo Fixo (4): {nucleo_fixo}")
+    print(f"      [V3.2] Cobertura ({len(cobertura_pool)}): {len(cobertura_pool)} dezenas (Inclui {len(frias)} Zebras)")
     
     # TREINAR AI SE HISTÓRICO DISPONÍVEL
     ai_model = None
@@ -367,7 +369,11 @@ def gerar_lotofacil(stats, orcamento, ultimo_resultado=None, history=None):
     while len(jogos) < qtd_jogos and attempts < max_attempts:
         attempts += 1
         
-        # Gera jogo: 5 Fixas + 10 Variáveis (escolhidas das 15 disponíveis)
+        # ESTRATÉGIA V3.2: REINVESTIMENTO (CAOS AMPLIADO)
+        # Gera jogo: 4 Fixas + 11 Variáveis (para dar 15)
+        # Isso reduz a dependência do núcleo e aumenta a chance de pegar zebras
+        variaveis = np.random.choice(cobertura_pool, 11, replace=False)
+        j = sorted(list(np.concatenate([nucleo_fixo, variaveis])))
         variaveis = np.random.choice(cobertura_pool, 10, replace=False)
         j = sorted(list(np.concatenate([nucleo_fixo, variaveis])))
         
@@ -475,9 +481,9 @@ def main():
     print("=== CENTRAL MULTI-LOTERIA (R$ 100) ===")
     conn = setup_db()
     
-    # 1. Atualizar DB
-    for loteria in CONFIG_LOTERIAS:
-        baixar_e_salvar(loteria, conn)
+    # 1. Atualizar DB (Disabled for offline generation)
+    # for loteria in CONFIG_LOTERIAS:
+    #     baixar_e_salvar(loteria, conn)
         
     # 2. Gerar Jogos
     relatorio = "# Palpites Otimizados (Orçamento R$ 100)\n\n"

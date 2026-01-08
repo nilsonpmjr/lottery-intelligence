@@ -1,6 +1,7 @@
 # 🎱 Lottery Intelligence (Loto-AI)
 
-Sistema de inteligência de dados para análise e geração de palpites otimizados para loterias da Caixa (Mega-Sena, Lotofácil, Lotomania e Dia de Sorte).
+Sistema de **Redução de Espaço Amostral** e Análise Estatística para loterias da Caixa.
+*Arquitetura Modular (Clean Architecture) - V4.0*
 
 ## 🚀 Funcionalidades
 
@@ -31,10 +32,12 @@ Sistema de inteligência de dados para análise e geração de palpites otimizad
 
 ## 🎮 Como Usar
 
-Para gerar o relatório completo com todos os palpites:
-
 ```bash
-python3 multi_lottery_analytics.py
+# Modo Strict (Apenas dados matemáticos)
+python3 lottery_intelligence/interface/cli.py --loteria lotofacil --mode strict
+
+# Modo Creative (Com interpretação narrativa)
+python3 lottery_intelligence/interface/cli.py --loteria lotofacil --mode creative
 ```
 
 O script irá:
@@ -45,7 +48,11 @@ O script irá:
 
 ## 🚀 Changelog (Versões)
 
-### v3.1 (Current) - Chaos Matrix & ML
+### v4.0 (New) - Clean Architecture
+- Separação estrita entre Core (Matemática) e Narrativa (UX).
+- Interface CLI modular com modos `strict` e `creative`.
+
+### v3.1 - Chaos Matrix & ML
 - **LotteryAI**: Machine Learning (RandomForest) treinado para detectar jogos "falsos".
 - **Chaos Matrix**: Núcleo Fixo (5 dezenas) + Injeção de Zebras (Dezenas frias).
 - **Firewall V3**: Filtros avançados de Soma, Primos e Fibonacci.
