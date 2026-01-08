@@ -10,6 +10,7 @@ from lottery_intelligence.core.config import CONFIG_LOTERIAS
 from lottery_intelligence.core.etl import setup_db, baixar_e_salvar, get_db
 from lottery_intelligence.core.generators import gerar_jogos
 from lottery_intelligence.narrative.interpretation import interpretar_resultados
+from lottery_intelligence.core.coverage import CoverageEngine
 
 def main():
     parser = argparse.ArgumentParser(description="Lottery Intelligence V4.0 CLI")
@@ -44,16 +45,23 @@ def main():
     print(f"[{args.loteria.upper()}] Gerando matrizes...")
     jogos = gerar_jogos(args.loteria, args.budget)
     
-    # 3. Narrativa (UX)
+    # 3. Métricas de Cobertura (V5.0)
+    avg_coverage = CoverageEngine.calculate_portfolio_coverage(jogos)
+    print(f"   [METRICS] Cobertura Média (Hamming): {avg_coverage:.2f}")
+
+    # 4. Narrativa (UX)
     report = interpretar_resultados(jogos, args.loteria, args.mode)
+    
+    # Adicionar métricas ao relatório
+    report += f"\n---\n**Avg Coverage (Diversity)**: {avg_coverage:.2f} (Target: >3.0)\n"
     
     # Output
     print("\n" + report)
     
     # Salvar relatório
-    with open(f"relatorio_v4_{args.loteria}.md", "w") as f:
+    with open(f"relatorio_v5_{args.loteria}.md", "w") as f:
         f.write(report)
-    print(f"\n[Artifact] Relatório salvo em: relatorio_v4_{args.loteria}.md")
+    print(f"\n[Artifact] Relatório salvo em: relatorio_v5_{args.loteria}.md")
 
 if __name__ == "__main__":
     main()

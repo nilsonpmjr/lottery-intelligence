@@ -8,6 +8,7 @@ from ..core.config import CONFIG_LOTERIAS
 from ..core.filters import AdvancedFilters
 from ..intelligence.brain import LotteryAI
 from ..core.etl import get_db
+from ..core.coverage import CoverageEngine
 
 def carregar_stats(loteria):
     conn = get_db()
@@ -110,12 +111,21 @@ def gerar_lotofacil(stats, orcamento, history):
     
     ultimo_resultado = history[-1] if history else None
     
+    # --- CONFIG COVERAGE V5 ---
+    min_dist = 4
+    
     while len(jogos) < qtd_jogos and attempts < max_attempts:
         attempts += 1
         
+        # Backoff Strategy
+        if attempts == 5000:
+            print("   [Coverage] Relaxando filtro de diversidade (Dist: 4 -> 3)")
+            min_dist = 3
+        elif attempts == 8000:
+            print("   [Coverage] Relaxando filtro de diversidade (Dist: 3 -> 2)")
+            min_dist = 2
+        
         # Gera jogo: 4 Fixas + 11 Variáveis
-        # Garantindo que variaveis não repitam e não tenham interseção errada
-        # (mas aqui nucleo e cobertura sao disjuntos por definicao do stats slice)
         variaveis = np.random.choice(cobertura_pool, 11, replace=False)
         cand = sorted(list(np.concatenate([nucleo_fixo, variaveis])))
         
@@ -129,6 +139,11 @@ def gerar_lotofacil(stats, orcamento, history):
             if score < 0.5: # Rejeita jogos "fake"
                 continue
         
+        # --- COVERAGE V5 ---
+        is_diverse, dist = CoverageEngine.validate_diversity(cand, jogos, min_distance=min_dist)
+        if not is_diverse:
+            continue
+            
         if cand not in jogos:
             jogos.append(cand)
             
