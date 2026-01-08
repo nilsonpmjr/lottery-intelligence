@@ -46,7 +46,19 @@ def main():
     jogos = gerar_jogos(args.loteria, args.budget)
     
     # 3. Métricas de Cobertura (V5.0)
-    avg_coverage = CoverageEngine.calculate_portfolio_coverage(jogos)
+    # 3. Métricas de Cobertura (V5.1 - Manual Calculation)
+    metric_engine = CoverageEngine()
+    total_dist = 0
+    pair_count = 0
+    
+    if len(jogos) > 1:
+        for i in range(len(jogos)):
+            for j in range(i + 1, len(jogos)):
+                d = metric_engine.calculate_distance(jogos[i], jogos[j])
+                total_dist += d
+                pair_count += 1
+                
+    avg_coverage = total_dist / pair_count if pair_count > 0 else 0.0
     print(f"   [METRICS] Cobertura Média (Hamming): {avg_coverage:.2f}")
 
     # 4. Narrativa (UX)

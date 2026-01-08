@@ -111,8 +111,8 @@ def gerar_lotofacil(stats, orcamento, history):
     
     ultimo_resultado = history[-1] if history else None
     
-    # --- CONFIG COVERAGE V5 ---
-    min_dist = 4
+    # --- CONFIG COVERAGE V5.1 ---
+    coverage_engine = CoverageEngine(min_distance=4)
     
     while len(jogos) < qtd_jogos and attempts < max_attempts:
         attempts += 1
@@ -120,10 +120,10 @@ def gerar_lotofacil(stats, orcamento, history):
         # Backoff Strategy
         if attempts == 5000:
             print("   [Coverage] Relaxando filtro de diversidade (Dist: 4 -> 3)")
-            min_dist = 3
+            coverage_engine.min_distance = 3
         elif attempts == 8000:
             print("   [Coverage] Relaxando filtro de diversidade (Dist: 3 -> 2)")
-            min_dist = 2
+            coverage_engine.min_distance = 2
         
         # Gera jogo: 4 Fixas + 11 Variáveis
         variaveis = np.random.choice(cobertura_pool, 11, replace=False)
@@ -139,9 +139,11 @@ def gerar_lotofacil(stats, orcamento, history):
             if score < 0.5: # Rejeita jogos "fake"
                 continue
         
-        # --- COVERAGE V5 ---
-        is_diverse, dist = CoverageEngine.validate_diversity(cand, jogos, min_distance=min_dist)
-        if not is_diverse:
+        # --- COVERAGE V5.1 ---
+        # Converte np.int64 para int puro para o CoverageEngine
+        cand_list = [int(x) for x in cand]
+        
+        if not coverage_engine.is_diverse(cand_list, jogos):
             continue
             
         if cand not in jogos:
