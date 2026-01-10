@@ -1,7 +1,11 @@
-# 🎱 Lottery Intelligence (Loto-AI)
+# 🧠 Lottery Intelligence (Loto-AI)
+
+> **Definição do Projeto:** Este é um sistema de Engenharia de Dados focado na redução de espaço amostral e diversificação estatística de apostas (Coverage Engine).
+> **Disclaimer:** Este sistema NÃO prevê sorteios futuros nem garante lucro. Seu objetivo é maximizar a eficiência da cobertura estatística e eliminar a redundância (jogos duplicados) através de algoritmos de otimização combinatória.
+> **Status:** P&D (Pesquisa e Desenvolvimento).
 
 Sistema de **Redução de Espaço Amostral** e Análise Estatística para loterias da Caixa.
-*Arquitetura Modular (Clean Architecture) - V4.0*
+*Arquitetura Modular (Clean Architecture) - V5.3 (Audit Protocol)*
 
 ## 🚀 Funcionalidades
 
@@ -48,7 +52,7 @@ O script irá:
 
 ## 🚀 Changelog (Versões)
 
-### v4.0 (New) - Clean Architecture
+### v
 - Separação estrita entre Core (Matemática) e Narrativa (UX).
 - Interface CLI modular com modos `strict` e `creative`.
 
