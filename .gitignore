@@ -43,3 +43,8 @@ Thumbs.db
 venv/
 mega_venv/
 env/
+
+# Frontend
+frontend/node_modules/
+frontend/.next/
+frontend/.env.local

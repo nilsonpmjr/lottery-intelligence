@@ -3,6 +3,7 @@ Gerador Híbrido V6.0 (30% V3 Legacy / 70% V5 Calibrated)
 Anti-Vibe Implementation - SPEC Driven
 """
 
+import itertools
 import numpy as np
 from typing import List, Dict, Tuple
 from ..core.config import CONFIG_LOTERIAS
@@ -58,7 +59,7 @@ def gerar_v3_legacy_batch(loteria: str, qtd_jogos: int, stats, history) -> List[
     elif loteria == 'lotomania':
         pool_stats = sorted_stats.head(80)['numero'].values
         jogos = []
-        
+
         for _ in range(qtd_jogos):
             attempts = 0
             while attempts < 1000:
@@ -68,13 +69,37 @@ def gerar_v3_legacy_batch(loteria: str, qtd_jogos: int, stats, history) -> List[
                 frias = np.random.choice(resto, 10, replace=False)
                 cand = sorted(list(np.concatenate([quentes, frias])))
                 cand_list = [int(x) for x in cand]
-                
+
                 if cand_list not in jogos:
                     jogos.append(cand_list)
                     break
-        
+
         return jogos
-    
+
+    elif loteria == 'megasena':
+        top_nums = sorted_stats.head(20)['numero'].values
+        combs = list(itertools.combinations(top_nums, 6))
+        np.random.shuffle(combs)
+        jogos = []
+        for c in combs:
+            if len(jogos) >= qtd_jogos:
+                break
+            pares = sum(1 for n in c if n % 2 == 0)
+            if 2 <= pares <= 4:
+                jogos.append(sorted([int(x) for x in c]))
+        return jogos
+
+    elif loteria == 'diadesorte':
+        pool = sorted_stats.head(15)['numero'].values
+        jogos = []
+        attempts = 0
+        while len(jogos) < qtd_jogos and attempts < 1000:
+            attempts += 1
+            cand = sorted([int(x) for x in np.random.choice(pool, 7, replace=False)])
+            if cand not in jogos:
+                jogos.append(cand)
+        return jogos
+
     return []
 
 def gerar_v5_calibrated_batch(loteria: str, qtd_jogos: int, stats, history) -> List[List[int]]:
@@ -138,23 +163,50 @@ def gerar_v5_calibrated_batch(loteria: str, qtd_jogos: int, stats, history) -> L
         jogos = []
         attempts = 0
         max_attempts = 5000
-        
-        # V6: Usar CoverageEngine com distância reduzida para Lotomania
+
         coverage_engine = CoverageEngine(min_distance=10, game_type='lotomania')
-        
+
         while len(jogos) < qtd_jogos and attempts < max_attempts:
             attempts += 1
             cand = sorted(list(np.random.choice(pool, 50, replace=False)))
             cand_list = [int(x) for x in cand]
-            
+
             if not coverage_engine.is_diverse(cand_list, jogos):
                 continue
-            
+
             if cand not in jogos:
                 jogos.append(cand_list)
-        
+
         return jogos
-    
+
+    elif loteria == 'megasena':
+        top_nums = sorted_stats.head(20)['numero'].values
+        combs = list(itertools.combinations(top_nums, 6))
+        np.random.shuffle(combs)
+        jogos = []
+        coverage_engine = CoverageEngine(min_distance=2, game_type='megasena')
+        for c in combs:
+            if len(jogos) >= qtd_jogos:
+                break
+            pares = sum(1 for n in c if n % 2 == 0)
+            if 2 <= pares <= 4:
+                cand = sorted([int(x) for x in c])
+                if coverage_engine.is_diverse(cand, jogos):
+                    jogos.append(cand)
+        return jogos
+
+    elif loteria == 'diadesorte':
+        pool = sorted_stats.head(15)['numero'].values
+        jogos = []
+        attempts = 0
+        coverage_engine = CoverageEngine(min_distance=2, game_type='diadesorte')
+        while len(jogos) < qtd_jogos and attempts < 5000:
+            attempts += 1
+            cand = sorted([int(x) for x in np.random.choice(pool, 7, replace=False)])
+            if coverage_engine.is_diverse(cand, jogos) and cand not in jogos:
+                jogos.append(cand)
+        return jogos
+
     return []
 
 def gerar_jogos_hybrid(loteria: str, orcamento: float) -> Tuple[List[Dict], Dict]:
