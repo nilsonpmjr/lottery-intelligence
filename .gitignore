@@ -1,20 +1,45 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-venv/
-env/
-.env
-
 # Database
-*.db
-*.sqlite3
+loterias.db
 
-# OS
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Generated reports
+relatorio_*.md
+palpites_*.md
+conferencia_*.md
+apostas_*.md
+
+# Temporary files
+verify_*.py
+test_*.py
+*.log
+
+# Archives
+*.zip
+*.tar.gz
+*.tar
+
+# OS files
 .DS_Store
 Thumbs.db
 
-# Generated Reports
-relatorio_*.md
-simulacao_*.md
-conferencia_*.md
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Virtual environments
+venv/
+mega_venv/
+env/

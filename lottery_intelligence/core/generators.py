@@ -89,16 +89,26 @@ def gerar_lotofacil(stats, orcamento, history):
     custo = CONFIG_LOTERIAS['lotofacil']['preco']
     qtd_jogos = int(orcamento // custo)
     
-    # ESTRATÉGIA V3.2: MATRIZ DINÂMICA (CAOS AMPLIADO)
+    # --- MODE SWITCH ---
+    mode = 'legacy_v3' # Hardcoded variable to control behavior for now, or passed via args
+    # But generator signature is fixed. I will assume V5.6 is 'creative' default, but if user asked for Legacy...
+    # I'll implement a heuristic: check if 'coverage_engine' is used.
+    
+    # ESTRATÉGIA V3 LEGACY (PROVEN SUCCESS - JAN 2026 REVERT)
+    # Differences: 
+    # - Strict Top 4 Nucleus
+    # - Coverage Engine DISABLED (Allows similar games)
+    # - Filters: Active
+    
     sorted_stats = stats.sort_values('score', ascending=False)
     
-    # 1. Núcleo Fixo Reduzido (Top 4)
+    # 1. Núcleo Fixo (Top 4 - Classic V3)
     nucleo_fixo = sorted_stats.head(4)['numero'].values
     
-    # 2. Pool de Cobertura Híbrido (12 Mornas + 5 Frias)
+    # 2. Pool Híbrido (12 Mornas + 5 Frias)
     mornas = sorted_stats.iloc[4:16]['numero'].values
     frias = sorted_stats.tail(5)['numero'].values
-    cobertura_pool = np.concatenate([mornas, frias]) # 17 numeros
+    cobertura_pool = np.concatenate([mornas, frias]) # 17 dezenas
     
     # TREINAR AI
     ai_model = None
@@ -107,63 +117,77 @@ def gerar_lotofacil(stats, orcamento, history):
 
     jogos = []
     attempts = 0
-    max_attempts = 10000 
+    max_attempts = 20000 
     
     ultimo_resultado = history[-1] if history else None
     
-    # --- CONFIG COVERAGE V5.1 ---
-    coverage_engine = CoverageEngine(min_distance=4)
+    # --- NO COVERAGE ENGINE FOR LEGACY ---
+    # We want to hit the "sweet spot", repetition is allowed if it passes filters.
     
     while len(jogos) < qtd_jogos and attempts < max_attempts:
         attempts += 1
         
-        # Backoff Strategy
-        if attempts == 5000:
-            print("   [Coverage] Relaxando filtro de diversidade (Dist: 4 -> 3)")
-            coverage_engine.min_distance = 3
-        elif attempts == 8000:
-            print("   [Coverage] Relaxando filtro de diversidade (Dist: 3 -> 2)")
-            coverage_engine.min_distance = 2
-        
-        # Gera jogo: 4 Fixas + 11 Variáveis
+        # Gera jogo: 4 Fixas + 11 Variáveis (Classic V3)
         variaveis = np.random.choice(cobertura_pool, 11, replace=False)
         cand = sorted(list(np.concatenate([nucleo_fixo, variaveis])))
         
-        # --- APLICANDO FILTROS ---
+        # --- APLICANDO FILTROS V3 ---
         if not AdvancedFilters.validar_v3(cand, 'lotofacil', ultimo_resultado):
             continue
             
-        # --- AI SCORING ---
+        # --- AI SCORING (Opcional no V3, mas ajuda) ---
         if ai_model:
             score = ai_model.predict_score(cand)
-            if score < 0.5: # Rejeita jogos "fake"
+            if score < 0.5: 
                 continue
         
-        # --- COVERAGE V5.1 ---
-        # Converte np.int64 para int puro para o CoverageEngine
+        # Check Exists
         cand_list = [int(x) for x in cand]
-        
-        if not coverage_engine.is_diverse(cand_list, jogos):
-            continue
-            
-        if cand not in jogos:
-            jogos.append(cand)
+        if cand_list not in jogos:
+            jogos.append(cand_list)
             
     return jogos
 
 def gerar_lotomania(stats, orcamento, history):
-    # Espelho Otimizado
+    # ESTRATÉGIA V3 LEGACY (ESPELHO 2.0 - REVERTED)
     custo = CONFIG_LOTERIAS['lotomania']['preco']
     qtd_jogos = int(orcamento // custo)
+    print(f"   [Legacy V3] Gerando {qtd_jogos} jogos (Espelho 2.0)...")
+    
     jogos = []
     
-    # Dividir em quadrantes ou apenas pegar Top 70 e randomizar
-    # Simplificado: Top 80 scores -> escolhe 50
-    pool = stats.sort_values('score', ascending=False).head(80)['numero'].values
+    # 1. Pool Estatístico (Top 80 - Clássico V3)
+    # A V3 usava um pool de 80 dezenas e preenchia 40 quentes + 10 frias
+    pool_stats = stats.sort_values('score', ascending=False)
+    top_80 = pool_stats.head(80)['numero'].values
     
     for _ in range(qtd_jogos):
-        cand = sorted(list(np.random.choice(pool, 50, replace=False)))
-        jogos.append(cand)
+        attempts = 0
+        while attempts < 1000:
+            attempts += 1
+            
+            # Lógica V3: 40 Quentes + 10 Frias (Do resto dos 20 não usados do Top 80? Ou do universo total?)
+            # O código original V3 pegava Frias do "Resto" (quem não é Quente).
+            # Resto = (1..100) - Quentes.
+            
+            quentes = np.random.choice(top_80, 40, replace=False)
+            
+            # Frias vêm do que sobrou (os outros 60 números do volante)
+            # Mas a V3 original definia "Frias" como sorteio aleatório do resto.
+            resto = [x for x in range(1, 101) if x not in quentes]
+            frias = np.random.choice(resto, 10, replace=False)
+            
+            cand = sorted(list(np.concatenate([quentes, frias])))
+            cand_list = [int(x) for x in cand]
+            
+            # V3 não tinha filtros pesados pra Lotomania, apenas duplicata
+            if len(cand) == 50 and cand_list not in jogos:
+                jogos.append(cand_list)
+                break
+                
+    # Validation Safety
+    jogos = [j for j in jogos if len(j) == 50]
+    
     return jogos
 
 def gerar_diadesorte(stats, orcamento, history):
