@@ -36,7 +36,7 @@ export default function LotteryDashboard() {
       });
       setResult(res);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An unknown error occurred");
+      setError(err instanceof Error ? err.message : "Ocorreu um erro desconhecido");
     } finally {
       setIsLoading(false);
     }
@@ -48,10 +48,10 @@ export default function LotteryDashboard() {
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-zinc-100">
-            Lottery Intelligence
+            LoterIA
           </h1>
           <p className="text-sm text-zinc-500">
-            AI-powered number generation and backtesting
+            Geracao inteligente de jogos e backtesting
           </p>
         </div>
         <HealthIndicator />
@@ -65,7 +65,7 @@ export default function LotteryDashboard() {
             onClick={() => setError(null)}
             className="ml-4 text-red-400 hover:text-red-300"
           >
-            Dismiss
+            Fechar
           </button>
         </div>
       )}
@@ -101,7 +101,7 @@ export default function LotteryDashboard() {
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
             />
           </svg>
-          Generating games...
+          Gerando jogos...
         </div>
       )}
 

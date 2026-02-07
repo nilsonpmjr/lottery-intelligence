@@ -21,9 +21,9 @@ export default function HealthIndicator() {
   }[status];
 
   const label = {
-    checking: "Checking API...",
-    connected: "API Connected",
-    error: "API Unreachable",
+    checking: "Verificando API...",
+    connected: "API Conectada",
+    error: "API Indisponivel",
   }[status];
 
   return (

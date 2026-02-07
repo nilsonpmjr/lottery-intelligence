@@ -43,20 +43,20 @@ export default function LotteryForm({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-      {/* Lottery select */}
+      {/* Loteria */}
       <div>
         <label
           htmlFor="loteria"
           className="mb-1 block text-sm font-medium text-zinc-300"
         >
-          Lottery
+          Loteria
         </label>
         <select
           id="loteria"
           {...register("loteria")}
           className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-zinc-100 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         >
-          <option value="">Select a lottery...</option>
+          <option value="">Selecione uma loteria...</option>
           {lotteries.map((l) => (
             <option key={l.name} value={l.name}>
               {l.name} (R${l.preco.toFixed(2)} &mdash; {l.escolhe} de{" "}
@@ -69,13 +69,13 @@ export default function LotteryForm({
         )}
       </div>
 
-      {/* Budget input */}
+      {/* Orcamento */}
       <div>
         <label
           htmlFor="orcamento"
           className="mb-1 block text-sm font-medium text-zinc-300"
         >
-          Budget (R$)
+          Orcamento (R$)
         </label>
         <input
           id="orcamento"
@@ -84,7 +84,7 @@ export default function LotteryForm({
           placeholder={
             selectedLottery
               ? String(selectedLottery.orcamento_alvo)
-              : "Enter budget"
+              : "Informe o valor"
           }
           {...register("orcamento")}
           className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-zinc-100 placeholder-zinc-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -95,11 +95,11 @@ export default function LotteryForm({
           </p>
         )}
         {estimatedGames !== null && (
-          <p className="mt-1 text-sm text-zinc-500">~{estimatedGames} games</p>
+          <p className="mt-1 text-sm text-zinc-500">~{estimatedGames} jogos</p>
         )}
       </div>
 
-      {/* Backtest checkbox */}
+      {/* Backtest */}
       <div className="flex items-center gap-2">
         <input
           id="run_backtest"
@@ -108,17 +108,17 @@ export default function LotteryForm({
           className="h-4 w-4 rounded border-zinc-600 bg-zinc-800 text-blue-500 focus:ring-blue-500"
         />
         <label htmlFor="run_backtest" className="text-sm text-zinc-300">
-          Run backtest analysis
+          Executar analise de backtest
         </label>
       </div>
 
-      {/* Submit */}
+      {/* Enviar */}
       <button
         type="submit"
         disabled={isLoading}
         className="w-full rounded-lg bg-blue-600 px-4 py-2.5 font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {isLoading ? "Generating..." : "Generate Games"}
+        {isLoading ? "Gerando..." : "Gerar Jogos"}
       </button>
     </form>
   );

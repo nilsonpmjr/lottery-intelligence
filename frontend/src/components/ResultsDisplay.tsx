@@ -26,25 +26,25 @@ export default function ResultsDisplay({ result }: ResultsDisplayProps) {
 
   return (
     <div className="space-y-6">
-      {/* Stats bar */}
+      {/* Estatisticas */}
       <div className="grid grid-cols-3 gap-4">
-        <StatCard label="Total Games" value={stats.total_games} />
+        <StatCard label="Total de Jogos" value={stats.total_games} />
         <StatCard
-          label="V3 Games"
+          label="Jogos V3"
           value={stats.v3_count}
           className="text-amber-400"
         />
         <StatCard
-          label="V5 Games"
+          label="Jogos V5"
           value={stats.v5_count}
           className="text-green-400"
         />
       </div>
 
-      {/* Games table */}
+      {/* Tabela de jogos */}
       <div className="rounded-lg border border-zinc-700 bg-zinc-800/50">
         <div className="border-b border-zinc-700 px-4 py-3">
-          <h3 className="font-medium text-zinc-200">Generated Games</h3>
+          <h3 className="font-medium text-zinc-200">Jogos Gerados</h3>
         </div>
         <div className="max-h-[28rem] overflow-y-auto">
           <table className="w-full text-sm">
@@ -52,7 +52,7 @@ export default function ResultsDisplay({ result }: ResultsDisplayProps) {
               <tr>
                 <th className="px-4 py-2 w-12">#</th>
                 <th className="px-4 py-2 w-24">Tag</th>
-                <th className="px-4 py-2">Numbers</th>
+                <th className="px-4 py-2">Dezenas</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-700/50">
@@ -85,43 +85,43 @@ export default function ResultsDisplay({ result }: ResultsDisplayProps) {
         </div>
       </div>
 
-      {/* Backtest card */}
+      {/* Backtest */}
       {backtest && (
         <div className="rounded-lg border border-zinc-700 bg-zinc-800/50">
           <div className="border-b border-zinc-700 px-4 py-3">
-            <h3 className="font-medium text-zinc-200">Backtest Results</h3>
+            <h3 className="font-medium text-zinc-200">Resultado do Backtest</h3>
           </div>
           <div className="p-4 space-y-4">
-            {/* Headline numbers */}
+            {/* Numeros destaque */}
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center">
                 <p className="text-2xl font-bold text-zinc-100">
                   {backtest.global_avg.toFixed(2)}
                 </p>
-                <p className="text-xs text-zinc-500">Avg Hits</p>
+                <p className="text-xs text-zinc-500">Media de Acertos</p>
               </div>
               <div className="text-center">
                 <p className="text-2xl font-bold text-zinc-100">
                   {backtest.global_max}
                 </p>
-                <p className="text-xs text-zinc-500">Max Hits</p>
+                <p className="text-xs text-zinc-500">Max. Acertos</p>
               </div>
               <div className="text-center">
                 <p className="text-2xl font-bold text-zinc-100">
                   {backtest.tested_draws}
                 </p>
-                <p className="text-xs text-zinc-500">Draws Tested</p>
+                <p className="text-xs text-zinc-500">Sorteios Testados</p>
               </div>
             </div>
 
-            {/* Per-game stats */}
+            {/* Estatisticas por jogo */}
             {backtest.per_game_stats.length > 0 && (
               <div className="max-h-48 overflow-y-auto">
                 <table className="w-full text-sm">
                   <thead className="sticky top-0 bg-zinc-800 text-left text-zinc-400">
                     <tr>
-                      <th className="px-3 py-1.5">Game</th>
-                      <th className="px-3 py-1.5">Avg</th>
+                      <th className="px-3 py-1.5">Jogo</th>
+                      <th className="px-3 py-1.5">Media</th>
                       <th className="px-3 py-1.5">Max</th>
                       <th className="px-3 py-1.5">Min</th>
                     </tr>
